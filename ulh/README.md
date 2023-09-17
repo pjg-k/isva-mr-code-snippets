@@ -8,4 +8,4 @@ The UserLookupHelper is a versatile utility class designed to assist with user d
 
 ## Table of Contents
 
-- [Initialization](ulh/init.md)
+- [Initialization](init.md)
