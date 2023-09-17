@@ -1,75 +1,68 @@
 # Initializing the UserLookupHelper
 
-#TODO: !! Add package imports to code.
+The `UserLookupHelper` in IBM Security Verify Access (ISVA) offers various initialization methods to suit different configuration scenarios and requirements. Below, you'll find examples of the most common initialization uses cases.
 
-The `UserLookupHelper` in IBM Security Verify Access (ISVA) offers various initialization methods to suit different configuration scenarios and requirements. Below, you'll find a description of each initialization method along with its intended use cases.
+## Using the ISVA RTE
 
-## Initialization Methods
-
-### 1. `init()`
-
-This initializer uses the configuration of the current appliance's Verify Access RTE. It's suitable for cases where you want to rely on the default configuration settings of the ISVA environment.
+This option utilizes the LDAP information from the ISVA Runtime Environment (RTE). To employ this configuration method, ensure that the `[bind-credentials]` stanza is populated in the `ldap.conf` configuration file. If basic user support is enabled, federated directories will be used.
 
 ```javascript
-var userLookup = new UserLookupHelper();
-userLookup.init();
+// Initialize UserLookupHelper using ISVA RTE
+var ulh = new UserLookupHelper();
+ulh.init(); // The default configuration will be used from the ISVA RTE
 ```
 
-### 2. `init(boolean useAuthService)`
-
-Initialize a `UserLookupHelper` using either the configuration in the Verify Access RTE or the configuration in the Username Password authentication mechanism. Use this when you need to choose between two different configurations based on a condition.
+Alternatively, you can set the `useAuthService` parameter to `false`.
 
 ```javascript
-var userLookup = new UserLookupHelper();
-userLookup.init(true); // Use the authentication service configuration
+// Initialize UserLookupHelper using ISVA RTE
+var ulh = new UserLookupHelper();
+ulh.init(false); // The default configuration will be used from the ISVA RTE
 ```
 
-### 3. `init(boolean useAuthService, java.util.Properties overrideProperties)`
+## Using the Username & Password Authentication Mechanism
 
-Similar to the previous method, but allows you to override specific properties using a `java.util.Properties` object. This can be useful for fine-tuning the configuration.
+The Username Password mechanism contains configurations for connecting to an LDAP, which can also be utilized by this lookup utility. Depending on the module configuration, federated directories can be utilized with this method. For detailed instructions on how to configure this mechanism, please refer to the following documentation: [Configuring Username Password Mechanism](https://www.ibm.com/docs/en/sva/10.0.6?topic=authentication-configuring-username-password).
 
 ```javascript
-var userLookup = new UserLookupHelper();
-var customProperties = new java.util.Properties();
-// Add custom properties as needed
-userLookup.init(true, customProperties); // Use the authentication service configuration with custom overrides
+// Initialize UserLookupHelper using ISVA RTE
+var ulh = new UserLookupHelper();
+ulh.init(true); // The default configuration will be used from the ISVA RTE
 ```
 
-### 4. `init(LdapServerConnection connection, String mgmtDomain)`
+## Using a LDAP Server Connection
 
-Initialize the lookup with a server connection and management domain. Use this method when you have a specific LDAP server connection to use.
+You can use a server connection to initialize the `UserLookupHelper`. The server connection can be retrieved using the `ServerConnectionFactory` class. Please note that this configuration does not support basic users or federated directories.
+
+For information on how to configure the server connection, refer to the following documentation: [Configuring Server Connections](https://www.ibm.com/docs/en/sva/10.0.6?topic=settings-server-connections).
 
 ```javascript
-var userLookup = new UserLookupHelper();
+var ulh = new UserLookupHelper();
 var ldapConnection = ServerConnectionFactory.getLdapConnectionByName(ldapConnectionName);
-userLookup.init(ldapConnection, 'Default');
+ulh.init(ldapConnection, 'Default');
 ```
 
-### 5. `init(LdapServerConnection connection, String searchFilter, String mgmtDomain, boolean loginFailuresPersistent)`
+### Ensure Login Failure persistence
 
-Initialize the lookup with a server connection, a custom search filter, and a management domain and handle login failures persistently.
+When you need to persist login failures in the LDAP while using an LDAP server connection for initialization, you can utilize the `method. This method requires a search filter. The default search filter is`(|(objectClass=ePerson)(objectClass=Person))`.
 
 ```javascript
-var userLookup = new UserLookupHelper();
+var ulh = new UserLookupHelper();
 var ldapConnection = ServerConnectionFactory.getLdapConnectionByName(ldapConnectionName);
 
 // Initialize the UserLookupHelper with persistent login failures handling
-userLookup.init(ldapConnection, '(&(objectclass=person))', 'Default', true);
+ulh.init(ldapConnection, '(|(objectClass=ePerson)(objectClass=Person))', 'Default', true);
 ```
 
-### 6. `init(String hostname, int port, String bindDn, String bindDnPwd, String mgmtDomain, int connectionTimeout)`
+## Providing Parameters directly
 
-Basic initialization with server connection details, management domain, and connection timeout settings. This method is suitable for straightforward LDAP configurations.
+You can also specify all the connection data directly. **It's important to be aware that this approach necessitates storing the password in plain text, which may have security implications.**
 
 ```javascript
-var userLookup = a new UserLookupHelper();
-userLookup.init("ldap.example.com", 389, "cn=admin,dc=example,dc=com", "password", "Default", 5000);
+var ulh = a new UserLookupHelper();
+ulh.init("ldap.example.com", 389, "cn=admin,dc=example,dc=com", "password", "Default", 5000);
 ```
 
-### Additional Initialization Methods
+## Additional Initialization Methods
 
-There are more initialization methods available with various configurations, including TLS, custom search filters, client certificate authentication, and persistence settings. Refer to the JavaDoc for the `UserLookupHelper` class for details on these methods and their use cases.
-
-## Conclusion
-
-Select the appropriate initialization method for your specific IBM Security Verify Access mapping rules and LDAP configuration needs. These methods allow you to tailor the `UserLookupHelper` to your requirements and make informed authentication and authorization decisions within your ISVA environment.
+There are more initialization methods available with various configurations, including TLS, custom search filters, client certificate authentication, and persistence settings. Refer to the JavaDoc for the UserLookupHelper class for details on these methods and their use cases.
